@@ -1,0 +1,427 @@
+
+Alessio <alessiomaira2013@gmail.com>
+12:36 (il y a 0 minute)
+À moi
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Écurie - Planning & Alertes</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --text: #333333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 70px;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-tabs {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid #ccc;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 5px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            accent-color: var(--accent);
+        }
+
+        .task-item.completed label {
+            text-decoration: line-through;
+            color: #bdc3c7;
+        }
+
+        .badge-urgent {
+            background-color: var(--danger);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button.btn-submit {
+            background-color: var(--accent);
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button.btn-danger {
+            background-color: var(--danger);
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .alert-card {
+            border-left: 5px solid var(--danger);
+            background: #fdf2e9;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+
+    <header id="header-title">Écurie - Planning Quotidien</header>
+
+    <div class="container">
+        <!-- TAB 1: CHECKLIST QUOTIDIENNE -->
+        <div id="tab-daily" class="section active">
+            <div class="card">
+                <h2>☀️ MATIN (Obligatoire)</h2>
+                <div class="task-list" id="list-matin"></div>
+            </div>
+
+            <div class="card">
+                <h2>🌤️ JOURNÉE (Selon Activité)</h2>
+                <div class="task-list" id="list-journee"></div>
+            </div>
+
+            <div class="card">
+                <h2>🌙 SOIR (Obligatoire)</h2>
+                <div class="task-list" id="list-soir"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: PLANNING HEBDOMADAIRE -->
+        <div id="tab-weekly" class="section">
+            <div class="card">
+                <h2>📅 Entretien & Tâches Hebdomadaires</h2>
+                <div class="task-list" id="list-hebdo"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ALERTES & TRANSMISSIONS -->
+        <div id="tab-alerts" class="section">
+            <div class="card">
+                <h2>⚠️ Signaler une Anomalie / Alerte</h2>
+                <form id="alert-form">
+                    <div class="form-group">
+                        <label>Cheval / Secteur</label>
+                        <input type="text" id="alert-target" placeholder="ex: Box 4, Paddock Sud, Tornado" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type d'Anomalie</label>
+                        <select id="alert-type">
+                            <option value="Colique / Santé">Colique / Problème de santé</option>
+                            <option value="Blessure / Boiterie">Blessure / Boiterie</option>
+                            <option value="Clôture / Sécurité">Clôture cassée / Sécurité</option>
+                            <option value="Abreuvoir / Eau">Abreuvoir défectueux / Fuite</option>
+                            <option value="Autre">Autre observation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Observation & Action réalisée</label>
+                        <textarea id="alert-desc" rows="3" placeholder="Décrivez le problème..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Rappel horaire / Alerte sonore (optionnel)</label>
+                        <input type="time" id="alert-time">
+                    </div>
+                    <button type="submit" class="btn-danger">🚨 ENREGISTRER L'ALERTE</button>
+                </form>
+            </div>
+
+            <h2>📋 Cahier de Transmission</h2>
+            <div id="transmission-log"></div>
+        </div>
+    </div>
+
+    <!-- NAVBAR NAVIGATION -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('daily', 'Écurie - Planning Quotidien')">📋 Quotidien</button>
+        <button class="tab-btn" onclick="switchTab('weekly', 'Écurie - Planning Hebdo')">📅 Hebdo</button>
+        <button class="tab-btn" onclick="switchTab('alerts', 'Cahier de Transmission')">🚨 Alertes</button>
+    </nav>
+
+    <script>
+        // DONNÉES EXTRAITES DES DOCUMENTS (1 & 2)
+        const dailyTasks = {
+            matin: [
+                "Tour général des chevaux (état, comportement, posture)",
+                "Vérifier abreuvement / Eau abreuvoirs",
+                "Distribuer les rations selon le protocole",
+                "Distribuer le foin (quantités prévues)",
+                "Nettoyage des boxes (retirer crottins/litière humide)",
+                "Balayer les couloirs / ranger le matériel",
+                "Contrôle sécurité (clôtures, portes, points d'eau)"
+            ],
+            journee: [
+                "Contrôler les chevaux rentrés du pré / au travail",
+                "Surveillance chevaux particuliers / traitements prévus",
+                "Sorties / retours selon le planning",
+                "Nettoyer et ranger le matériel utilisé",
+                "Nettoyer la sellerie et les zones de pansage",
+                "Contrôle des couvertures et protections"
+            ],
+            soir: [
+                "Dernier tour complet des chevaux",
+                "Vérifier l'eau / abreuvoirs",
+                "Distribuer la ration du soir et foin",
+                "Vérifier fermetures des portes et installations",
+                "Nettoyer les zones de passage",
+                "Éteindre les lumières non nécessaires"
+            ]
+        };
+
+        const weeklyTasks = [
+            "Curage approfondi / nettoyage complet des boxes",
+            "Nettoyage et contrôle des abreuvoirs / mangeoires",
+            "Contrôle complet des clôtures / portails / électrificateur",
+            "Nettoyage approfondi sellerie / zone de pansage",
+            "Nettoyage / contrôle des outils (brouettes, fourches, balais)",
+            "Contrôle des stocks (foin, litière, alimentation, soins)",
+            "Désinfection et nettoyage des grilles/parois"
+        ];
+
+        let alertsData = JSON.parse(localStorage.getItem('ecurie_alerts')) || [];
+
+        // INITIALISATION
+        document.addEventListener('DOMContentLoaded', () => {
+            renderList('matin', dailyTasks.matin, 'daily');
+            renderList('journee', dailyTasks.journee, 'daily');
+            renderList('soir', dailyTasks.soir, 'daily');
+            renderList('hebdo', weeklyTasks, 'weekly');
+            renderAlerts();
+            checkNotificationsPermission();
+        });
+
+        // GENERATION DES CHECKLISTS
+        function renderList(sectionId, tasks, type) {
+            const container = document.getElementById(`list-${sectionId}`);
+            container.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const key = `${type}_${sectionId}_${index}`;
+                const isChecked = localStorage.getItem(key) === 'true';
+                
+                const div = document.createElement('div');
+                div.className = `task-item ${isChecked ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <input type="checkbox" id="${key}" ${isChecked ? 'checked' : ''} onchange="toggleTask('${key}', this)">
+                    <label for="${key}">${task}</label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleTask(key, element) {
+            const isChecked = element.checked;
+            localStorage.setItem(key, isChecked);
+            element.parentElement.classList.toggle('completed', isChecked);
+        }
+
+        // GESTION NAVIGATION TABS
+        function switchTab(tabId, title) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById('header-title').innerText = title;
+            event.currentTarget.classList.add('active');
+        }
+
+        // GESTION DES ALERTES & TRANSMISSIONS
+        document.getElementById('alert-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const target = document.getElementById('alert-target').value;
+            const type = document.getElementById('alert-type').value;
+            const desc = document.getElementById('alert-desc').value;
+            const time = document.getElementById('alert-time').value;
+
+            const alertObj = {
+                id: Date.now(),
+                date: new Date().toLocaleString('fr-FR'),
+                target,
+                type,
+                desc,
+                time
+            };
+
+            alertsData.unshift(alertObj);
+            localStorage.setItem('ecurie_alerts', JSON.stringify(alertsData));
+            renderAlerts();
+            e.target.reset();
+
+            if (time) {
+                scheduleNotification(target, type, time);
+            }
+        });
+
+        function renderAlerts() {
+            const container = document.getElementById('transmission-log');
+            container.innerHTML = '';
+            
+            if(alertsData.length === 0) {
+                container.innerHTML = '<p style="color:#7f8c8d; text-align:center;">Aucune anomalie signalée.</p>';
+                return;
+            }
+
+            alertsData.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'card alert-card';
+                card.innerHTML = `
+                    <div class="alert-header">
+                        <span>📍 ${item.target}</span>
+                        <span>${item.date}</span>
+                    </div>
+                    <p style="margin: 5px 0; font-weight:bold; color:var(--danger);">${item.type}</p>
+                    <p style="margin: 5px 0;">${item.desc}</p>
+                    ${item.time ? `<p style="margin: 5px 0; font-size: 0.85rem; color:#d35400;">⏰ Rappel prévu à : <strong>${item.time}</strong></p>` : ''}
+                    <button class="btn-submit" style="background:#7f8c8d; padding:5px; margin-top:5px; font-size:0.8rem;" onclick="deleteAlert(${item.id})">Marquer comme Résolu</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function deleteAlert(id) {
+            alertsData = alertsData.filter(a => a.id !== id);
+            localStorage.setItem('ecurie_alerts', JSON.stringify(alertsData));
+            renderAlerts();
+        }
+
+        // GESTION DES NOTIFICATIONS / RAPPELS
+        function checkNotificationsPermission() {
+            if ("Notification" in window && Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+        }
+
+        function scheduleNotification(target, type, timeStr) {
+            const [hours, minutes] = timeStr.split(':');
+            const now = new Date();
+            const alertTime = new Date();
+            alertTime.setHours(hours, minutes, 0, 0);
+
+            let timeout = alertTime.getTime() - now.getTime();
+            if (timeout > 0) {
+                setTimeout(() => {
+                    if (Notification.permission === "granted") {
+                        new Notification(`🚨 ALERTE ÉCURIE : ${target}`, {
+                            body: `${type} - Vérification planifiée.`,
+                        });
+                    } else {
+                        alert(`🚨 RAPPEL ALERTE ÉCURIE : ${target}\n${type}`);
+                    }
+                }, timeout);
+                alert(`Rappel programmé pour ${timeStr}`);
+            }
+        }
+    </script>
+</body>
+</html>
